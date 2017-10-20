@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Security;
 
@@ -6,8 +7,9 @@ use App\Entity\User;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class UserProvider
+class UserProvider implements UserProviderInterface
 {
     public function loadUserByUsername($username): User
     {

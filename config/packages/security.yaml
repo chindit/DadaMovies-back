@@ -3,19 +3,32 @@ security:
     encoders:
         App\Entity\User: bcrypt # User argon2 in PHP 7.2
     providers:
-        user:
+        user_provider:
             id: App\Security\UserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        login:
+            pattern:  ^/login
+            stateless: true
+            anonymous: true
+            provider: user_provider
+            json_login:
+                check_path: /login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
         main:
-            anonymous: ~
+            pattern:   ^/
+            provider: user_provider
+            stateless: true
+            anonymous: true
+            lexik_jwt: ~
 
-            # activate different ways to authenticate
-
-            # http_basic: ~
-            # https://symfony.com/doc/current/book/security.html#a-configuring-how-your-users-will-authenticate
-
-            # form_login: ~
-            # https://symfony.com/doc/current/cookbook/security/form_login_setup.html
+    access_control:
+        - { path: ^/login, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/docs, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/users, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/, roles: [ ROLE_USER ] }

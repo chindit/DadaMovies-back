@@ -3,26 +3,90 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Class User
+ * @package App\Entity
+ * @ApiResource(attributes={"normalization_context"={"groups"={"user"}}})
+ * @ORM\Entity()
+ */
 class User implements UserInterface, EquatableInterface
 {
-    /** @var string  */
-    private $username;
-    /** @var string  */
-    private $password;
-    /** @var string  */
-    private $salt;
-    /** @var array  */
-    private $roles;
+    /** @var  int
+     *  @ORM\Column(type="integer")
+     *  @ORM\Id
+     *  @ORM\GeneratedValue(strategy="AUTO")
+     */
+    public $id;
+    /**
+     *  @ORM\Column(type="string", length=100)
+     *  @var string
+     *  @Assert\NotBlank()
+     *  @Assert\Length(min=5, max=100)
+     *  @Assert\Email()
+     */
+    private $username = '';
+    /**
+     *  @ORM\Column(type="string", length=200)
+     *  @var string
+     *  @Assert\NotBlank()
+     *  @Assert\Length(min=8)
+     */
+    private $password = '';
+    /**
+     * @ORM\Column(type="string", length=25)
+     * @var string
+     */
+    private $salt = '';
+    /**
+     * @ORM\Column(type="array")
+     * @var array
+     */
+    private $roles = [];
+    /**
+     * @ORM\Column(type="datetime")
+     * @var \DateTime
+     */
+    private $createdAt;
 
-    public function __construct(string $username, string $password, string $salt, array $roles)
+    public function __construct(string $username = '', string $password = '', string $salt = '', array $roles = [])
     {
-        $this->username = $username;
-        $this->password = $password;
-        $this->salt = $salt;
-        $this->roles = $roles;
+        if ($username) {
+            $this->username = $username;
+        }
+        if ($password) {
+            $this->password = $password;
+        }
+        if ($salt) {
+            $this->salt = $salt;
+        } else {
+            $salt = openssl_random_pseudo_bytes(25);
+        }
+        if ($roles) {
+            $this->roles = $roles;
+        }
+        $this->createdAt = new \DateTime();
+    }
+
+    /**
+     * @Groups({"user"})
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): User
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getRoles(): array
@@ -35,14 +99,39 @@ class User implements UserInterface, EquatableInterface
         return $this->password;
     }
 
+    public function setPassword(string $password): User
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
     public function getSalt(): string
     {
         return $this->salt;
     }
 
+    /**
+     * @Groups({"user"})
+     */
     public function getUsername(): string
     {
         return $this->username;
+    }
+
+    public function setUsername(string $username): User
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"user"})
+     */
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->createdAt;
     }
 
     public function eraseCredentials()
