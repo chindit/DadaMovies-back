@@ -1,4 +1,6 @@
 {
+    "name": "DadaMovies",
+    "description": "A simple project to easily manage your movie collection",
     "type": "project",
     "license": "proprietary",
     "require": {
@@ -31,7 +33,8 @@
     "scripts": {
         "auto-scripts": {
             "make cache-warmup": "script",
-            "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd",
+            "cache:clear": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"
