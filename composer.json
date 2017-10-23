@@ -12,7 +12,9 @@
     },
     "require-dev": {
         "symfony/flex": "^1.0",
-        "symfony/dotenv": "^3.3"
+        "symfony/dotenv": "^3.3",
+        "phpunit/phpunit": "^6.4",
+        "phpspec/prophecy": "^1.7"
     },
     "config": {
         "preferred-install": {

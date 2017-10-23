@@ -50,6 +50,16 @@ class User implements UserInterface, EquatableInterface
      */
     private $roles = [];
     /**
+     * @ORM\Column(type="boolean")
+     * @var bool
+     */
+    private $notifications = false;
+    /**
+     * @ORM\Column(type="boolean")
+     * @var bool
+     */
+    private $premium = false;
+    /**
      * @ORM\Column(type="datetime")
      * @var \DateTime
      */
@@ -66,7 +76,7 @@ class User implements UserInterface, EquatableInterface
         if ($salt) {
             $this->salt = $salt;
         } else {
-            $salt = openssl_random_pseudo_bytes(25);
+            $this->salt = openssl_random_pseudo_bytes(25);
         }
         if ($roles) {
             $this->roles = $roles;
@@ -109,6 +119,36 @@ class User implements UserInterface, EquatableInterface
     public function getSalt(): string
     {
         return $this->salt;
+    }
+
+    /**
+     * @Groups({"user"})
+     */
+    public function getNotifications(): bool
+    {
+        return $this->notifications;
+    }
+
+    public function setNotifications(bool $notifications): User
+    {
+        $this->notifications = $notifications;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"user"})
+     */
+    public function getPremium(): bool
+    {
+        return $this->premium;
+    }
+
+    public function setPremium(bool $premium): User
+    {
+        $this->premium = $premium;
+
+        return $this;
     }
 
     /**
