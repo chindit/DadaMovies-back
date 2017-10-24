@@ -44,7 +44,7 @@ class UserManager implements EventSubscriberInterface
     }
 
     private function supportsClass(string $class): bool
-    {var_dump($class, User::class);
+    {
         return User::class === $class;
     }
 }
