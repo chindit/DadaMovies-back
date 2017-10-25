@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\EquatableInterface;
@@ -13,7 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class User
  * @package App\Entity
- * @ApiResource(attributes={"normalization_context"={"groups"={"user"}}})
+ * @ApiResource(attributes={"normalization_context"={"groups"={"user"}}},
+ *     collectionOperations={
+ *     "special"={"route_name"="api_register_user"}
+ * })
  * @ORM\Entity()
  */
 class User implements UserInterface, EquatableInterface
@@ -22,6 +26,7 @@ class User implements UserInterface, EquatableInterface
      *  @ORM\Column(type="integer")
      *  @ORM\Id
      *  @ORM\GeneratedValue(strategy="AUTO")
+     *  @ApiProperty(identifier=true)
      */
     public $id;
     /**
@@ -76,7 +81,7 @@ class User implements UserInterface, EquatableInterface
         if ($salt) {
             $this->salt = $salt;
         } else {
-            $this->salt = openssl_random_pseudo_bytes(25);
+            $this->salt = bin2hex(openssl_random_pseudo_bytes(25));
         }
         if ($roles) {
             $this->roles = $roles;
@@ -102,6 +107,20 @@ class User implements UserInterface, EquatableInterface
     public function getRoles(): array
     {
         return $this->roles;
+    }
+
+    public function setRoles(array $roles): User
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function addRole(string $role): User
+    {
+        $this->roles[] = $role;
+
+        return $this;
     }
 
     public function getPassword(): string
