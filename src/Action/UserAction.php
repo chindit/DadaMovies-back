@@ -24,7 +24,7 @@ class UserAction
      * @Route(
      *     name="api_register_user",
      *     path="/users/register",
-     *     defaults={"_api_resource_class"=User::class, "_api_collection_operation_name"="special"}
+     *     defaults={"_api_resource_class"=User::class, "_api_collection_operation_name"="register_user"}
      * )
      * @Method("POST")
      */

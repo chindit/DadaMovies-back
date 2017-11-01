@@ -2,6 +2,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'en'
+    googleClient: '57234230420-gf539vb5h2ndq6p55aq2klgiu5dehvjk.apps.googleusercontent.com'
 
 services:
     # default configuration for services in *this* file
@@ -27,3 +28,8 @@ services:
     App\Action\:
         resource: '../src/Action'
         tags: ['controller.service_arguments']
+
+    App\Action\OAuthLoginAction:
+        autowire: false # normal syntax $var : 'value' doesn't work.  Why ?
+        arguments: ['%googleClient%']
+        tags: ['controller.service_arguments'] # required to be treated as controller

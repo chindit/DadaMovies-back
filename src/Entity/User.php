@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @package App\Entity
  * @ApiResource(attributes={"normalization_context"={"groups"={"user"}}},
  *     collectionOperations={
- *     "special"={"route_name"="api_register_user"}
+ *     "register_user"={"route_name"="api_register_user"}
  * })
  * @ORM\Entity()
  */
