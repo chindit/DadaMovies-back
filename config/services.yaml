@@ -31,5 +31,5 @@ services:
 
     App\Action\OAuthLoginAction:
         autowire: false # normal syntax $var : 'value' doesn't work.  Why ?
-        arguments: ['%googleClient%']
+        arguments: ['@App\Service\TokenManager', '@App\Security\UserManager', '@lexik_jwt_authentication.jwt_manager', '%googleClient%']
         tags: ['controller.service_arguments'] # required to be treated as controller

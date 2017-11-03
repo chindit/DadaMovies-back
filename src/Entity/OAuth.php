@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Class OAuth
  * @package App\Entity
  *
- * @ApiResource(collectionOperations={"post"={"method"="POST"},"login_oauth"={"route_name"="api_login_oauth"}}, itemOperations={})
+ * @ApiResource(collectionOperations={"login_oauth"={"route_name"="api_login_oauth"}}, itemOperations={})
  */
 class OAuth
 {

@@ -5,6 +5,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -50,6 +51,21 @@ class User implements UserInterface, EquatableInterface
      */
     private $salt = '';
     /**
+     * @ORM\Column(type="string", length=2)
+     * @var string
+     */
+    private $locale = 'en';
+    /**
+     * @ORM\Column(type="string", length=155)
+     * @var string
+     */
+    private $name = '';
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @var string
+     */
+    private $profilePicture = '';
+    /**
      * @ORM\Column(type="array")
      * @var array
      */
@@ -69,6 +85,11 @@ class User implements UserInterface, EquatableInterface
      * @var \DateTime
      */
     private $createdAt;
+    /**
+     * @var ArrayCollection|Token[]
+     * @ORM\OneToMany(targetEntity="Token", mappedBy="user", cascade={"persist", "remove"})
+     */
+    private $tokens;
 
     public function __construct(string $username = '', string $password = '', string $salt = '', array $roles = [])
     {
@@ -87,6 +108,7 @@ class User implements UserInterface, EquatableInterface
             $this->roles = $roles;
         }
         $this->createdAt = new \DateTime();
+        $this->tokens = new ArrayCollection();
     }
 
     /**
@@ -216,5 +238,108 @@ class User implements UserInterface, EquatableInterface
         }
 
         return true;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    /**
+     * @param string $locale
+     * @return User
+     */
+    public function setLocale(string $locale): User
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    /**
+     * @param ArrayCollection $tokens
+     *
+     * @return User
+     */
+    public function setTokens(ArrayCollection $tokens): User
+    {
+        $this->tokens = $tokens;
+
+        return $this;
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getTokens(): ArrayCollection
+    {
+        return $this->tokens;
+    }
+
+    /**
+     * Add tokens
+     *
+     * @param Token $token
+     *
+     * @return User
+     */
+    public function addToken(Token $token): User
+    {
+        $this->tokens[] = $token;
+        $token->setUser($this);
+
+        return $this;
+    }
+
+    /**
+     * Remove tokens
+     *
+     * @param Token $token
+     * @return User
+     */
+    public function removeToken(Token $token): User
+    {
+        $this->tokens->removeElement($token);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return User
+     */
+    public function setName(string $name): User
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProfilePicture(): string
+    {
+        return $this->profilePicture;
+    }
+
+    /**
+     * @param string $profilePicture
+     * @return User
+     */
+    public function setProfilePicture(string $profilePicture): User
+    {
+        $this->profilePicture = $profilePicture;
+        return $this;
     }
 }

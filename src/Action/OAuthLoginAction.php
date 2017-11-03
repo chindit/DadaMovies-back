@@ -5,17 +5,36 @@ namespace App\Action;
 
 
 use App\Entity\OAuth;
-use App\Security\UserProvider;
+use App\Exception\OAuthException;
+use App\Security\UserManager;
+use App\Service\TokenManager;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class OAuthLoginAction
 {
     private $googleClient;
+    /**
+     * @var TokenManager
+     */
+    private $tokenManager;
+    /**
+     * @var UserManager
+     */
+    private $userManager;
+    /**
+     * @var JWTManager
+     */
+    private $JWTManager;
 
-    public function __construct($googleClient)
+    public function __construct(TokenManager $tokenManager, UserManager $userManager, JWTManager $JWTManager, string $googleClient)
     {
         $this->googleClient = $googleClient;
+        $this->tokenManager = $tokenManager;
+        $this->userManager = $userManager;
+        $this->JWTManager = $JWTManager;
     }
 
     /**
@@ -25,19 +44,22 @@ class OAuthLoginAction
      *     defaults={"_api_resource_class"=OAuth::class, "_api_collection_operation_name"="api_login_oauth"}
      * )
      * @Method("POST")
+     * @param OAuth $data
+     * @return JsonResponse
+     * @throws OAuthException
      */
-    public function __invoke(OAuth $data): OAuth
+    public function __invoke(OAuth $data): JsonResponse
     {
         $client = new \Google_Client(['client_id' => $this->googleClient]);
         $payload = $client->verifyIdToken($data->getIdToken());
         if ($payload) {
-            $userid = $payload['sub'];
-            // If request specified a G Suite domain:
-            //$domain = $payload['hd'];
+            $payload['token'] = $data->getIdToken();
+
+            $user = $this->tokenManager->handleOAuthUser($payload);
+
+            return new JsonResponse($this->JWTManager->create($user));
         } else {
-            // Invalid ID token
+            throw new OAuthException('a');
         }
-        var_dump($data);
-        return new OAuth();
     }
 }
