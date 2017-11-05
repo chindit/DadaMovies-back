@@ -22,19 +22,14 @@ class OAuthLoginAction
      */
     private $tokenManager;
     /**
-     * @var UserManager
-     */
-    private $userManager;
-    /**
      * @var JWTManager
      */
     private $JWTManager;
 
-    public function __construct(TokenManager $tokenManager, UserManager $userManager, JWTManager $JWTManager, GoogleClientWrapper $googleClientWrapper)
+    public function __construct(TokenManager $tokenManager, JWTManager $JWTManager, GoogleClientWrapper $googleClientWrapper)
     {
         $this->googleClient = $googleClientWrapper;
         $this->tokenManager = $tokenManager;
-        $this->userManager = $userManager;
         $this->JWTManager = $JWTManager;
     }
 
@@ -58,7 +53,7 @@ class OAuthLoginAction
 
             return new JsonResponse($this->JWTManager->create($user));
         } else {
-            throw new OAuthException('a');
+            throw new OAuthException('Social network token is invalid');
         }
     }
 }
