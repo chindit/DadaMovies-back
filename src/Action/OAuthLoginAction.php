@@ -6,7 +6,7 @@ namespace App\Action;
 
 use App\Entity\OAuth;
 use App\Exception\OAuthException;
-use App\Security\UserManager;
+use App\Service\UserManager;
 use App\Service\TokenManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;

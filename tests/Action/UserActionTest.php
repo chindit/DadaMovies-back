@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use App\Action\UserAction;
 use App\Entity\User;
-use App\Security\UserManager;
+use App\Service\UserManager;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophet;
 
@@ -11,7 +11,6 @@ class UserActionTest extends TestCase
 {
     /** @var  Prophet */
     private $prophet;
-    /** @var  UserManager */
     private $userManager;
     /** @var  UserAction */
     private $userAction;
@@ -41,6 +40,8 @@ class UserActionTest extends TestCase
         $this->userManager->registerUser($user)->willReturn($user);
         $this->userManager->registerUser($user)->shouldBeCalled();
 
-        $this->userAction->__invoke($user);
+        $result = $this->userAction->__invoke($user);
+
+        $this->assertEquals($user, $result);
     }
 }

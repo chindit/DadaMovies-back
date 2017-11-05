@@ -7,7 +7,6 @@ namespace App\Service;
 use App\Entity\Token;
 use App\Entity\User;
 use App\Exception\OAuthException;
-use App\Security\UserManager;
 use Doctrine\ORM\EntityManager;
 
 class TokenManager

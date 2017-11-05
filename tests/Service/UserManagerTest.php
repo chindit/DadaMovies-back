@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use App\Entity\Token;
 use App\Entity\User;
-use App\Security\UserManager;
+use App\Service\UserManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\TestCase;
@@ -85,8 +85,25 @@ class UserManagerTest extends TestCase
         $this->assertEquals(32, $result->getId());
     }
 
-    public function testTokenHydratation()
+    /**
+     * @expectedException App\Exception\OAuthException
+     * @expectedExceptionMessage Missing required keys
+     */
+    public function testUpdateUserFailure()
     {
+        $wrongArray = ['picture' => 'erutcip', 'name' => 'eman', 'truc' => 'curt'];
+        $this->userManager->updateUser(new User(), $wrongArray);
+    }
 
+    public function testCorrectUpdateUser()
+    {
+        $correctData = ['picture' => 'http://www.google.com', 'name' => 'John Smith', 'locale' => 'en', 'email' => 'john@smith.us'];
+
+        $user = $this->userManager->updateUser(new User(), $correctData);
+
+        $this->assertEquals('http://www.google.com', $user->getProfilePicture());
+        $this->assertEquals('John Smith', $user->getName());
+        $this->assertEquals('en', $user->getLocale());
+        $this->assertEquals('john@smith.us', $user->getUsername());
     }
 }
