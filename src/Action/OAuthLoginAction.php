@@ -6,6 +6,7 @@ namespace App\Action;
 
 use App\Entity\OAuth;
 use App\Exception\OAuthException;
+use App\Service\GoogleClientWrapper;
 use App\Service\UserManager;
 use App\Service\TokenManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
@@ -29,9 +30,9 @@ class OAuthLoginAction
      */
     private $JWTManager;
 
-    public function __construct(TokenManager $tokenManager, UserManager $userManager, JWTManager $JWTManager, string $googleClient)
+    public function __construct(TokenManager $tokenManager, UserManager $userManager, JWTManager $JWTManager, GoogleClientWrapper $googleClientWrapper)
     {
-        $this->googleClient = $googleClient;
+        $this->googleClient = $googleClientWrapper;
         $this->tokenManager = $tokenManager;
         $this->userManager = $userManager;
         $this->JWTManager = $JWTManager;
@@ -50,11 +51,9 @@ class OAuthLoginAction
      */
     public function __invoke(OAuth $data): JsonResponse
     {
-        $client = new \Google_Client(['client_id' => $this->googleClient]);
-        $payload = $client->verifyIdToken($data->getIdToken());
+        $payload = $this->googleClient->verifyIdToken($data->getIdToken());
         if ($payload) {
             $payload['token'] = $data->getIdToken();
-
             $user = $this->tokenManager->handleOAuthUser($payload);
 
             return new JsonResponse($this->JWTManager->create($user));

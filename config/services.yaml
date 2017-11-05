@@ -23,13 +23,12 @@ services:
         # but if a service is unused, it's removed anyway
         exclude: '../src/{Entity,Migrations,Repository,Tests}'
 
+    App\Service\GoogleClientWrapper:
+        arguments:
+            $googleClient: '%googleclient%'
+
     # controllers are imported separately to make sure they
     # have the tag that allows actions to type-hint services
     App\Action\:
         resource: '../src/Action'
         tags: ['controller.service_arguments']
-
-    App\Action\OAuthLoginAction:
-        autowire: false # normal syntax $var : 'value' doesn't work.  Why ?
-        arguments: ['@App\Service\TokenManager', '@App\Security\UserManager', '@lexik_jwt_authentication.jwt_manager', '%googleClient%']
-        tags: ['controller.service_arguments'] # required to be treated as controller

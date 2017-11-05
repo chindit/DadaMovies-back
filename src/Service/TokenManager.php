@@ -49,7 +49,7 @@ class TokenManager
     private function hydrateToken(array $data): Token
     {
         $token = new Token();
-        $requiredKeys = ['sub', 'picture', 'name', 'locale', 'exp', 'iat', 'email', 'token'];
+        $requiredKeys = ['sub', 'picture', 'name', 'exp', 'iat', 'email', 'token'];
 
         if (!empty(array_diff($requiredKeys, array_keys($data)))) {
             throw new OAuthException('Missing required keys');
@@ -58,7 +58,7 @@ class TokenManager
         $token->setExpiration($data['exp']);
         $token->setIssued($data['iat']);
         $token->setToken($data['token']);
-        $token->setUserId($data['sub']);
+        $token->setUserId((int)$data['sub']);
 
         return $token;
     }
