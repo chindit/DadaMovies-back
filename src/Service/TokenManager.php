@@ -32,11 +32,14 @@ class TokenManager
 
         $user = $this->userManager->findByTokenOrEmail($token, $data['email']) ?? new User();
         $token->setUser($user);
+        //$this->entityManager->persist($token);
         $user = $this->userManager->updateUser($user, $data);
 
         // If it's a new user, assign a random password to pass validation
-        $user->setPassword(bin2hex(openssl_random_pseudo_bytes(25)));
-        $user = $this->userManager->registerUser($user);
+        if (empty($user->getPassword())) {
+            $user->setPassword(bin2hex(openssl_random_pseudo_bytes(25)));
+            $user = $this->userManager->registerUser($user);
+        }
 
         $this->cleanOldTokens($token);
 
@@ -55,8 +58,8 @@ class TokenManager
             throw new OAuthException('Missing required keys');
         }
 
-        $token->setExpiration($data['exp']);
-        $token->setIssued($data['iat']);
+        $token->setExpiration((int)$data['exp']);
+        $token->setIssued((int)$data['iat']);
         $token->setToken($data['token']);
         $token->setUserId((int)$data['sub']);
 
@@ -66,6 +69,9 @@ class TokenManager
     private function cleanOldTokens(Token $token): void
     {
         $oldTokens = $this->entityManager->getRepository(Token::class)->findBy(['userId' => $token->getUserId()]);
+        if (!$oldTokens) {
+            return;
+        }
 
         /** @var Token $currentToken */
         foreach ($oldTokens as $currentToken) {
@@ -73,7 +79,5 @@ class TokenManager
                 $this->entityManager->remove($currentToken);
             }
         }
-
-        $this->entityManager->flush();
     }
 }

@@ -37,13 +37,14 @@ class UserManager
 
     public function updateUser(User $user, array $data): User
     {
-        $requiredKeys = ['picture', 'name', 'locale', 'email'];
+        $requiredKeys = ['picture', 'name', 'email'];
 
         if (!empty(array_diff($requiredKeys, array_keys($data)))) {
             throw new OAuthException('Missing required keys');
         }
-
-        $user->setLocale($data['locale']);
+        if (isset($data['locale'])) {
+            $user->setLocale($data['locale']);
+        }
         $user->setUsername($data['email']);
         $user->setName($data['name']);
         $user->setProfilePicture($data['picture']);
