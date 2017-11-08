@@ -23,6 +23,7 @@ class TokenManagerTest extends TestCase
     private $entityManager;
     private $userManager;
     private $tokenRepository;
+    private $user;
 
     protected function setUp()
     {
@@ -34,6 +35,15 @@ class TokenManagerTest extends TestCase
 
         $this->tokenRepository = $this->prophet->prophesize(EntityRepository::class);
         $this->entityManager->getRepository(Token::class)->willReturn($this->tokenRepository);
+
+        $this->user = new User();
+        $this->user->setId(74);
+        $this->user->setPassword('aaa');
+
+        $this->userManager->updateUser(Argument::any(), Argument::any())->willReturn($this->user);
+        $this->userManager->findByTokenOrEmail(Argument::any(), 'liame')->willReturn($this->user);
+        $this->entityManager->persist(Argument::any())->willReturn(true);
+        $this->entityManager->flush()->willReturn(true);
 
         $this->tokenManager = new TokenManager($this->entityManager->reveal(), $this->userManager->reveal());
     }
@@ -62,25 +72,16 @@ class TokenManagerTest extends TestCase
         $token->setIssued(321);
         $token->setToken('DadaMovies');
 
-        $user = new User();
-        $user->setId(74);
-        $user->setPassword('aaa');
-
-        $this->userManager->updateUser(Argument::any(), Argument::any())->willReturn($user);
-        $this->userManager->findByTokenOrEmail(Argument::any(), 'liame')->willReturn($user);
-        $this->entityManager->persist(Argument::any())->willReturn(true);
-        $this->entityManager->flush()->willReturn(true);
         $this->tokenRepository->findBy(['userId' => 12])->willReturn(null);
-
 
         $data = ['sub' => 12, 'picture' => 'erutcip', 'name' => 'eman', 'exp' => 123, 'iat' => 321, 'email' => 'liame', 'token' => 'DadaMovies'];
         $result = $this->tokenManager->handleOAuthUser($data);
 
         $this->userManager->findByTokenOrEmail(Argument::any(), 'liame')->shouldBeCalled();
-        $this->entityManager->persist($user->setProfilePicture('erutcip')->setName('eman')->setUsername('liame'))->shouldBeCalled();
+        $this->entityManager->persist($this->user->setProfilePicture('erutcip')->setName('eman')->setUsername('liame'))->shouldBeCalled();
         $this->entityManager->flush()->shouldBeCalled();
 
-        $this->assertEquals($user, $result);
+        $this->assertEquals($this->user, $result);
     }
 
     public function testValidCallWithNoPasswordAndOldTokens()
@@ -93,13 +94,13 @@ class TokenManagerTest extends TestCase
 
         $user = new User();
         $user->setId(74);
+        $user->setPassword('auie');
 
-        $this->userManager->findByTokenOrEmail(Argument::any(), 'liame')->willReturn(null);
-        $this->userManager->updateUser(Argument::any(), Argument::any())->willReturn($user);
+        $this->user->setPassword('');
+
         $this->userManager->registerUser(Argument::which('id', 74))->willReturn($user);
-        $this->entityManager->persist(Argument::any())->willReturn(true);
         $this->entityManager->remove(Argument::type(Token::class))->willReturn(true);
-        $this->entityManager->flush()->willReturn(true);
+
         $expiredToken = $token->setExpiration(time()-3600)->setId(1);
         $validToken = clone $token;
         $validToken = $validToken->setExpiration(time()+3600)->setId(2);

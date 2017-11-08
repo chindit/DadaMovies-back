@@ -20,12 +20,19 @@ class OAuthLoginActionTest extends TestCase
     /** @var  Prophet */
     private $prophet;
     private $oAuthLoginAction;
+    private $tokenManager;
+    private $jwtManager;
+    private $googleClientWrapper;
 
     protected function setUp()
     {
         parent::setUp();
 
         $this->prophet = new Prophet();
+
+        $this->tokenManager = $this->prophet->prophesize(TokenManager::class);
+        $this->jwtManager = $this->prophet->prophesize(JWTManager::class);
+        $this->googleClientWrapper = $this->prophet->prophesize(GoogleClientWrapper::class);
     }
 
     protected function tearDown()
@@ -41,12 +48,9 @@ class OAuthLoginActionTest extends TestCase
      */
     public function testMissingKeys()
     {
-        $tokenManager = $this->prophet->prophesize(TokenManager::class)->reveal();
-        $jwtManager = $this->prophet->prophesize(JWTManager::class)->reveal();
-        $googleClientWrapper = $this->prophet->prophesize(GoogleClientWrapper::class);
-        $googleClientWrapper->verifyIdToken(Argument::any())->willReturn(false);
+        $this->googleClientWrapper->verifyIdToken(Argument::any())->willReturn(false);
 
-        $this->oAuthLoginAction = new OAuthLoginAction($tokenManager, $jwtManager, $googleClientWrapper->reveal());
+        $this->oAuthLoginAction = new OAuthLoginAction($this->tokenManager->reveal(), $this->jwtManager->reveal(), $this->googleClientWrapper->reveal());
 
         $oauth = new OAuth();
         $oauth->setIdToken('bépo');
@@ -56,21 +60,18 @@ class OAuthLoginActionTest extends TestCase
     public function testValidKeys()
     {
         $tokenData = ['sub' => 'bus', 'picture' => 'erutcip', 'name' => 'eman', 'exp' => 'pxe', 'iat' => 'tai', 'email' => 'liame', 'token' => 'nekot'];
-        $tokenManager = $this->prophet->prophesize(TokenManager::class);
+
         $user = new User();
         $user->setId(32);
         $submittedData = $tokenData;
         $submittedData['token'] = 'DadaMovies';
-        $tokenManager->handleOAuthUser($submittedData)->willReturn($user);
-        $tokenManager->handleOAuthUser($submittedData)->shouldBeCalled();
+        $this->tokenManager->handleOAuthUser($submittedData)->willReturn($user);
+        $this->tokenManager->handleOAuthUser($submittedData)->shouldBeCalled();
+        $this->jwtManager->create($user)->shouldBeCalled();
+        $this->jwtManager->create($user)->willReturn('JWTToken');
+        $this->googleClientWrapper->verifyIdToken(Argument::any())->willReturn($tokenData);
 
-        $jwtManager = $this->prophet->prophesize(JWTManager::class);
-        $jwtManager->create($user)->shouldBeCalled();
-        $jwtManager->create($user)->willReturn('JWTToken');
-        $googleClientWrapper = $this->prophet->prophesize(GoogleClientWrapper::class);
-        $googleClientWrapper->verifyIdToken(Argument::any())->willReturn($tokenData);
-
-        $this->oAuthLoginAction = new OAuthLoginAction($tokenManager->reveal(), $jwtManager->reveal(), $googleClientWrapper->reveal());
+        $this->oAuthLoginAction = new OAuthLoginAction($this->tokenManager->reveal(), $this->jwtManager->reveal(), $this->googleClientWrapper->reveal());
 
         $oauth = new OAuth();
         $oauth->setIdToken('DadaMovies');
