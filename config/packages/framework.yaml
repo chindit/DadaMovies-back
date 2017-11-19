@@ -12,3 +12,13 @@ framework:
     #fragments: ~
     php_errors:
         log: true
+
+nelmio_cors:
+    defaults:
+        allow_origin: ['*']
+        allow_methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS']
+        allow_headers: ['content-type', 'authorization']
+        expose_headers: ['link']
+        max_age: 3600
+    paths:
+        '^/': ~
